@@ -1,0 +1,51 @@
+{
+  "name": "kinetic-engine",
+  "version": "0.0.1",
+  "description": "Unprecedented kinetic engine",
+  "keywords": [
+    "kinetic",
+    "drag`n`drop",
+    "scroll",
+    "swipe"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "bugs": {
+    "url": "https://github.com/broadsw0rd/kinetic-engine/issues",
+    "email": "broadsw.rd@yandex.ru"
+  },
+  "author": {
+    "name": "Vladimir Bykov",
+    "email": "broadsw.rd@yandex.ru",
+    "url": "https://github.com/broadsw0rd"
+  },
+  "main": "dist/kinetic.min.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/broadsw0rd/kinetic-engine"
+  },
+  "devDependencies": {
+    "uglify-js": "latest",
+    "jshint": "latest",
+    "jshint-stylish": "latest",
+    "babel": "5.8.29"
+  },
+  "babel": {
+    "modules": "ignore",
+    "blacklist": ["strict"],
+    "loose": "all"
+  },
+  "jshintConfig":{
+    "asi": true,
+    "laxcomma": true,
+    "laxbreak": true,
+    "esnext": true,
+    "proto": true
+  },
+  "scripts": {
+    "build": "uglifyjs -c -m -- dist/kinetic.js > dist/kinetic.min.js",
+    "lint": "jshint --reporter node_modules/jshint-stylish/index.js src/.",
+    "6to5": "cat tools/header.js > dist/kinetic.js && babel src >> dist/kinetic.js && cat tools/footer.js >> dist/kinetic.js"
+  },
+  "dependencies": {}
+}
