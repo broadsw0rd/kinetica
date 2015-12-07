@@ -16,4 +16,6 @@ body, html{
 .ball {
   position: absolute;
   border-radius: 50%;
+  -ms-touch-action: none;
+  touch-action: none;
 }
