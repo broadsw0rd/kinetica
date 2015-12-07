@@ -18,7 +18,7 @@ function Ball(){
 
     this.setPosition(new Kinetic.Vector(rand(0, containerWidth), rand(0, containerHeight)))   
     this.el.classList.add('ball')
-    this.el.style.height = this.el.style.width = Math.min(containerWidth, containerHeight) / 10 + 'px'
+    this.el.style.height = this.el.style.width = Math.max(containerWidth, containerHeight) / 10 + 'px'
     this.el.style.background = this.color
 
     Kinetic.spawn(this.kinetic)
