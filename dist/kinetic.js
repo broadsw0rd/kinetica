@@ -52,6 +52,7 @@ function Kinetic(_ref) {
     this._framesCount = 0;
     this._timestamp = 0;
     this._elapsed = 0;
+    this._pointerId = null;
 }
 
 Kinetic.VELOCITY_THRESHOLD = 10;
@@ -252,6 +253,13 @@ Kinetic.prototype.release = function () {
 };
 
 Kinetic.prototype._mousedownHandler = function (e) {
+    if (e.pointerId) {
+        if (!this._pointerId) {
+            this._pointerId = e.pointerId;
+        } else if (this._pointerId !== e.pointerId) {
+            return;
+        }
+    }
     document.addEventListener('mousemove', this);
     document.addEventListener('pointermove', this);
     document.addEventListener('mouseup', this);
@@ -261,6 +269,9 @@ Kinetic.prototype._mousedownHandler = function (e) {
 };
 
 Kinetic.prototype._mousemoveHandler = function (e) {
+    if (e.pointerId && this._pointerId !== e.pointerId) {
+        return;
+    }
     this.drag(e);
 };
 
