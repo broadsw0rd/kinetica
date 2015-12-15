@@ -162,18 +162,18 @@ Kinetic.prototype.unhandleEvents = function(){
 Kinetic.prototype.handleEvent = function(e){
     e.preventDefault()
     switch(e.type){
-        case 'mousedown':
-        case 'pointerdown': {
+        case 'pointerdown':
+        case 'mousedown': {
             this._mousedownHandler(e)
             break
         }
-        case 'pointermove':
-        case 'mousemove': {
+        case 'mousemove':
+        case 'pointermove': {
             this._mousemoveHandler(e)
             break
         }
-        case 'pointerup':
-        case 'mouseup': {
+        case 'mouseup':
+        case 'pointerup': {
             this._mouseupHandler(e)
             break
         }
@@ -242,11 +242,17 @@ Kinetic.prototype._mouseupHandler = function(e){
     this.release()
 }
 
-Kinetic.prototype._touchstartHandler = function(e){
+Kinetic.prototype._touchstartHandler = function(e){    
+    if(e.targetTouches && e.targetTouches.length > 1){
+        return
+    }
     this.tap(e)
 }
 
 Kinetic.prototype._touchmoveHandler = function(e){
+    if(e.targetTouches && e.targetTouches.length > 1){
+        return
+    }
     this.drag(e)
 }
 
