@@ -219,6 +219,7 @@ Kinetic.prototype.release = function(){
     }
     this._framesCount = 0
     this._pressed = false
+    this._pointerId = null
 }
 
 Kinetic.prototype._mousedownHandler = function(e){
@@ -246,8 +247,8 @@ Kinetic.prototype._mousemoveHandler = function(e){
 }
 
 Kinetic.prototype._mouseupHandler = function(e){
-    if(this._pointerId){
-        this._pointerId = null
+    if(e.pointerId && this._pointerId && this._pointerId !== e.pointerId){
+        return
     }
     document.removeEventListener('pointermove', this)
     document.removeEventListener('mousemove', this)
