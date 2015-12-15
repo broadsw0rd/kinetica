@@ -246,6 +246,9 @@ Kinetic.prototype._mousemoveHandler = function(e){
 }
 
 Kinetic.prototype._mouseupHandler = function(e){
+    if(this._pointerId){
+        this._pointerId = null
+    }
     document.removeEventListener('pointermove', this)
     document.removeEventListener('mousemove', this)
     document.removeEventListener('pointerup', this)
