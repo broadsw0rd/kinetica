@@ -5,14 +5,14 @@ import Vector from './vector.js'
 // -------------------------------------
 
 function Pointer({ id }){
-	this.id = id
-	this.position = new Vector(0, 0)
+    this.id = id
+    this.position = new Vector(0, 0)
     this.delta = new Vector(0, 0)
     this.velocity = new Vector(0, 0)
     this.amplitude = new Vector(0, 0)
     this._startPosition = new Vector(0, 0)
     this._pressed = false
-    this._shouldNotify = false
+    this._active = false
     this._swiped = false
     this._timestamp = 0
     this._trackTime = 0
@@ -21,8 +21,8 @@ function Pointer({ id }){
 
 Pointer.TRACK_THRESHOLD = 100
 
-Pointer.prototype.shouldNotify = function(){
-    return this._shouldNotify
+Pointer.prototype.active = function(){
+    return this._active
 }
 
 Pointer.prototype.pressed = function(){
@@ -36,7 +36,7 @@ Pointer.prototype.swiped = function(){
 Pointer.prototype.tap = function(position){
     this.velocity = new Vector(0, 0)
     this.amplitude = new Vector(0, 0)
-	this._startPosition = position
+    this._startPosition = position
     this._timestamp = 0
     this._trackTime = 0
     this._elapsed = 0
@@ -44,14 +44,19 @@ Pointer.prototype.tap = function(position){
 }
 
 Pointer.prototype.drag = function(position){
-	this.position = position
+    this.position = position
     this.delta.iadd(this.position.sub(this._startPosition))
     this._startPosition = this.position
-    this._shouldNotify = true
+    this._active = true
 }
 
-Pointer.prototype.release = function(velocityThreshold, amplitudeFactor){
-	if(this.velocity.length() > velocityThreshold){
+Pointer.prototype.release = function(){
+    this.delta.zero()
+    this._active = false
+}
+
+Pointer.prototype.lounch = function(velocityThreshold, amplitudeFactor){
+    if(this.velocity.length() > velocityThreshold){
         this.amplitude = this.velocity.imul(amplitudeFactor)
         this._swiped = true
     }
@@ -60,8 +65,8 @@ Pointer.prototype.release = function(velocityThreshold, amplitudeFactor){
 }
 
 Pointer.prototype.track = function(time, movingAvarageFilter){
-	this._timestamp = this._timestamp || time
-	this._trackTime = this._trackTime || time
+    this._timestamp = this._timestamp || time
+    this._trackTime = this._trackTime || time
     if(time - this._trackTime >= Pointer.TRACK_THRESHOLD){
         this._elapsed = time - this._timestamp
         this._timestamp = time
@@ -71,7 +76,7 @@ Pointer.prototype.track = function(time, movingAvarageFilter){
         this.velocity = v.imul(0.8).iadd(this.velocity.imul(0.2))
     }
     else {
-    	this._trackTime = time
+        this._trackTime = time
     }
 }
 
@@ -79,7 +84,7 @@ Pointer.prototype.swipe = function(time, decelerationRate, deltaThreshold){
     this._elapsed = time - this._timestamp
     this.delta = this.amplitude.mul(Math.exp(-this._elapsed / decelerationRate))
     if(this.delta.length() > deltaThreshold){
-        this._shouldNotify = true
+        this._active = true
     }
     else {
         this._swiped = false
