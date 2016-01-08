@@ -1,8 +1,6 @@
 languages:
   JavaScript: true
 exclude_paths:
-- "static/js/main.js"
-- "dist/kinetic.js"
-- "dist/kinetic.min.js"
-- "tools/header.js"
-- "tools/footer.js"
+- "dist/*"
+- "static/**/*"
+- "tools/*"
