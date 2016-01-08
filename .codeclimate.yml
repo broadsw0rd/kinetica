@@ -1,0 +1,8 @@
+languages:
+  JavaScript: true
+exclude_paths:
+- "babelhook.js"
+- "static/libs/browser-polyfill.min.js"
+- "static/libs/mocha.js"
+- "static/js/main.js"
+- "static/js/pattern.js"
