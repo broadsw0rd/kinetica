@@ -25,27 +25,21 @@
     "url": "https://github.com/broadsw0rd/kinetic-engine"
   },
   "devDependencies": {
-    "uglify-js": "latest",
-    "jshint": "latest",
-    "jshint-stylish": "latest",
-    "babel": "5.8.29"
+    "babel": "^6.5.2",
+    "babel-preset-es2015-rollup": "^1.1.1",
+    "rollup": "^0.25.8",
+    "rollup-plugin-babel": "^2.4.0",
+    "snazzy": "^3.0.1",
+    "uglify-js": "^2.6.2"
   },
   "babel": {
-    "modules": "ignore",
-    "blacklist": ["strict"],
-    "loose": "all"
-  },
-  "jshintConfig":{
-    "asi": true,
-    "laxcomma": true,
-    "laxbreak": true,
-    "esnext": true,
-    "proto": true
+    "presets": [
+      "es2015-rollup"
+    ]
   },
   "scripts": {
     "build": "uglifyjs -c -m -- dist/kinetic.js > dist/kinetic.min.js",
-    "lint": "jshint --reporter node_modules/jshint-stylish/index.js src/.",
-    "6to5": "cat tools/header.js > dist/kinetic.js && babel src >> dist/kinetic.js && cat tools/footer.js >> dist/kinetic.js"
+    "6to5": "rollup -c"
   },
   "dependencies": {}
 }

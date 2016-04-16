@@ -275,3 +275,5 @@ Kinetic.prototype._touchmoveHandler = function(e){
 Kinetic.prototype._touchendHandler = function(e){
     this.release()
 }
+
+export default Kinetic
