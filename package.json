@@ -26,7 +26,6 @@
   },
   "devDependencies": {
     "babel": "^6.5.2",
-    "babel-plugin-transform-class-properties": "^6.6.0",
     "babel-preset-es2015-rollup": "^1.1.1",
     "rollup": "^0.25.8",
     "rollup-plugin-babel": "^2.4.0",
@@ -36,13 +35,11 @@
   "babel": {
     "presets": [
       "es2015-rollup"
-    ],
-    "plugins": [
-      "transform-class-properties"
     ]
   },
   "scripts": {
     "build": "uglifyjs -c -m -- dist/kinetic.js > dist/kinetic.min.js",
+    "check": "snazzy src/*.js",
     "6to5": "rollup -c"
   },
   "dependencies": {}
