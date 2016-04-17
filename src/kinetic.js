@@ -1,4 +1,4 @@
-import Vector from './vector.js'
+import Vector from './vectory.js'
 
 // -------------------------------------
 // Kinetic
@@ -116,7 +116,7 @@ Kinetic.prototype.track = function(time){
 Kinetic.prototype.swipe = function(time){
     this._elapsed = time - this._timestamp
     this.delta = this.amplitude.mul(Math.exp(-this._elapsed / DECELERATION_RATE))
-    if(this.delta.length() > this.deltaThreshold){
+    if(this.delta.magnitude() > this.deltaThreshold){
         this._shouldNotify = true
     }
     else {
@@ -213,7 +213,7 @@ Kinetic.prototype.drag = function(e){
 }
 
 Kinetic.prototype.release = function(){
-    if(this.velocity.length() > this.velocityThreshold){
+    if(this.velocity.magnitude() > this.velocityThreshold){
         this.amplitude = this.velocity.imul(this.amplitudeFactor)
         this._swiped = true
     }
