@@ -525,6 +525,7 @@
       key: 'handleEvent',
       value: function handleEvent(e) {
         e.preventDefault();
+        console.log(e.type, e.touches, e.targetTouches, e.changedTouches);
         switch (e.type) {
           case 'pointerdown':
           case 'mousedown':
