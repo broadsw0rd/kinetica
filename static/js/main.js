@@ -30,8 +30,7 @@ Ball.from = function(){
 
 Ball.prototype.setPosition = function(position){
     this.position = position
-    this.el.style.left = this.position.x + 'px'
-    this.el.style.top = this.position.y + 'px'    
+    this.el.style.transform = 'translate3d(' + this.position.x + 'px, ' + this.position.y + 'px, 0)'
 }
 
 Ball.prototype._dragHandler = function(position, delta){
