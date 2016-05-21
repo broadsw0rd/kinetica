@@ -38,9 +38,9 @@
     ]
   },
   "scripts": {
-    "build": "uglifyjs -c -m -- dist/kinetic.js > dist/kinetic.min.js",
+    "min": "uglifyjs -c -m -- dist/kinetic.js > dist/kinetic.min.js",
     "check": "snazzy src/*.js",
-    "6to5": "rollup -c"
+    "build": "rollup -c"
   },
   "dependencies": {}
 }
