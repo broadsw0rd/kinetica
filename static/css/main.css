@@ -15,9 +15,8 @@ body, html{
   left: 0;
 }
 
-.ball {
+.rect {
   position: absolute;
-  border-radius: 50%;
   -ms-touch-action: none;
   touch-action: none;
 }
