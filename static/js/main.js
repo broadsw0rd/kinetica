@@ -47,7 +47,7 @@ Rect.prototype._dragHandler = function (pointers) {
       return (pointerA.position.x > pointerB.position.x) - (pointerA.position.x < pointerB.position.x)
     })
     this.setPosition(this.position.iadd(pointers[0].delta))
-    this.setSize(this.size.iadd(this.pointers[1].delta))
+    this.setSize(this.size.iadd(pointers[1].delta))
   }
 }
 
