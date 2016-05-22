@@ -1,10 +1,10 @@
-import Vector from './vector.js'
+import Vector from './vectory.js'
 
-// -------------------------------------
-// Pointer
-// -------------------------------------
+var TRACK_THRESHOLD = 100
 
-function Pointer({ id }){
+class Pointer {
+
+  constructor ({ id }) {
     this.id = id
     this.position = new Vector(0, 0)
     this.delta = new Vector(0, 0)
@@ -12,28 +12,14 @@ function Pointer({ id }){
     this.amplitude = new Vector(0, 0)
     this._startPosition = new Vector(0, 0)
     this._pressed = false
-    this._active = false
+    this._activated = false
     this._swiped = false
     this._timestamp = 0
     this._trackTime = 0
     this._elapsed = 0
-}
+  }
 
-Pointer.TRACK_THRESHOLD = 100
-
-Pointer.prototype.active = function(){
-    return this._active
-}
-
-Pointer.prototype.pressed = function(){
-    return this._pressed
-}
-
-Pointer.prototype.swiped = function(){
-    return this._swiped
-}
-
-Pointer.prototype.tap = function(position){
+  tap (position) {
     this.velocity = new Vector(0, 0)
     this.amplitude = new Vector(0, 0)
     this._startPosition = position
@@ -41,52 +27,63 @@ Pointer.prototype.tap = function(position){
     this._trackTime = 0
     this._elapsed = 0
     this._pressed = true
-}
+  }
 
-Pointer.prototype.drag = function(position){
+  drag (position) {
     this.position = position
     this.delta.iadd(this.position.sub(this._startPosition))
     this._startPosition = this.position
-    this._active = true
-}
+    this._activated = true
+  }
 
-Pointer.prototype.release = function(){
-    this.delta.zero()
-    this._active = false
-}
-
-Pointer.prototype.lounch = function(velocityThreshold, amplitudeFactor){
-    if(this.velocity.length() > velocityThreshold){
-        this.amplitude = this.velocity.imul(amplitudeFactor)
-        this._swiped = true
+  launch (velocityThreshold, amplitudeFactor) {
+    if (this.velocity.magnitude() > velocityThreshold) {
+      this.amplitude = this.velocity.imul(amplitudeFactor)
+      this._swiped = true
     }
     this._pressed = false
     this._trackTime = 0
-}
+  }
 
-Pointer.prototype.track = function(time, movingAvarageFilter){
+  track (time, movingAvarageFilter) {
     this._timestamp = this._timestamp || time
     this._trackTime = this._trackTime || time
-    if(time - this._trackTime >= Pointer.TRACK_THRESHOLD){
-        this._elapsed = time - this._timestamp
-        this._timestamp = time
-        this._trackTime = 0
+    if (time - this._trackTime >= TRACK_THRESHOLD) {
+      this._elapsed = time - this._timestamp
+      this._timestamp = time
+      this._trackTime = 0
 
-        var v = this.delta.mul(movingAvarageFilter).idiv(1 + this._elapsed)
-        this.velocity = v.imul(0.8).iadd(this.velocity.imul(0.2))
+      var v = this.delta.mul(movingAvarageFilter).idiv(1 + this._elapsed)
+      this.velocity = v.lerp(this.velocity, 0.2)
     }
-    else {
-        this._trackTime = time
-    }
-}
+  }
 
-Pointer.prototype.swipe = function(time, decelerationRate, deltaThreshold){
+  swipe (time, decelerationRate, deltaThreshold) {
     this._elapsed = time - this._timestamp
     this.delta = this.amplitude.mul(Math.exp(-this._elapsed / decelerationRate))
-    if(this.delta.length() > deltaThreshold){
-        this._active = true
+    if (this.delta.magnitude() > deltaThreshold) {
+      this._activated = true
+    } else {
+      this._swiped = false
     }
-    else {
-        this._swiped = false
-    }
+  }
+
+  deactivate () {
+    this.delta.zero()
+    this._activated = false
+  }
+
+  activated () {
+    return this._activated
+  }
+
+  pressed () {
+    return this._pressed
+  }
+
+  swiped () {
+    return this._swiped
+  }
 }
+
+export default Pointer
