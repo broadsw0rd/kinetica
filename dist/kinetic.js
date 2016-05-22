@@ -346,6 +346,106 @@
     });
   }
 
+  var TRACK_THRESHOLD = 100;
+
+  var Pointer = function () {
+    function Pointer(_ref) {
+      var id = _ref.id;
+      babelHelpers.classCallCheck(this, Pointer);
+
+      this.id = id;
+      this.position = new Vector(0, 0);
+      this.delta = new Vector(0, 0);
+      this.velocity = new Vector(0, 0);
+      this.amplitude = new Vector(0, 0);
+      this._startPosition = new Vector(0, 0);
+      this._pressed = false;
+      this._activated = false;
+      this._swiped = false;
+      this._timestamp = 0;
+      this._trackTime = 0;
+      this._elapsed = 0;
+    }
+
+    babelHelpers.createClass(Pointer, [{
+      key: 'tap',
+      value: function tap(position) {
+        this.velocity = new Vector(0, 0);
+        this.amplitude = new Vector(0, 0);
+        this._startPosition = position;
+        this._timestamp = 0;
+        this._trackTime = 0;
+        this._elapsed = 0;
+        this._pressed = true;
+      }
+    }, {
+      key: 'drag',
+      value: function drag(position) {
+        this.position = position;
+        this.delta.iadd(this.position.sub(this._startPosition));
+        this._startPosition = this.position;
+        this._activated = true;
+      }
+    }, {
+      key: 'launch',
+      value: function launch(velocityThreshold, amplitudeFactor) {
+        if (this.velocity.magnitude() > velocityThreshold) {
+          this.amplitude = this.velocity.imul(amplitudeFactor);
+          this._swiped = true;
+        }
+        this._pressed = false;
+        this._trackTime = 0;
+      }
+    }, {
+      key: 'track',
+      value: function track(time, movingAvarageFilter) {
+        this._timestamp = this._timestamp || time;
+        this._trackTime = this._trackTime || time;
+        if (time - this._trackTime >= TRACK_THRESHOLD) {
+          this._elapsed = time - this._timestamp;
+          this._timestamp = time;
+          this._trackTime = 0;
+
+          var v = this.delta.mul(movingAvarageFilter).idiv(1 + this._elapsed);
+          this.velocity = v.lerp(this.velocity, 0.2);
+        }
+      }
+    }, {
+      key: 'swipe',
+      value: function swipe(time, decelerationRate, deltaThreshold) {
+        this._elapsed = time - this._timestamp;
+        this.delta = this.amplitude.mul(Math.exp(-this._elapsed / decelerationRate));
+        if (this.delta.magnitude() > deltaThreshold) {
+          this._activated = true;
+        } else {
+          this._swiped = false;
+        }
+      }
+    }, {
+      key: 'deactivate',
+      value: function deactivate() {
+        this.delta.zero();
+        this._activated = false;
+      }
+    }, {
+      key: 'activated',
+      value: function activated() {
+        return this._activated;
+      }
+    }, {
+      key: 'pressed',
+      value: function pressed() {
+        return this._pressed;
+      }
+    }, {
+      key: 'swiped',
+      value: function swiped() {
+        return this._swiped;
+      }
+    }]);
+    return Pointer;
+  }();
+
   var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
 
   // iOS decelerationRate = normal
@@ -353,6 +453,16 @@
 
   var startTime;
   var currentTime;
+
+  function activated(pointer) {
+    return pointer.activated();
+  }
+
+  function alive(pointer) {
+    return pointer.activated() || pointer.pressed();
+  }
+
+  var mouseEventId = -1;
 
   var Kinetic = function () {
     babelHelpers.createClass(Kinetic, null, [{
@@ -383,15 +493,11 @@
       value: function notify(time) {
         for (var i = 0, kinetic; i < Kinetic.instances.length; i++) {
           kinetic = Kinetic.instances[i];
-          if (kinetic.pressed()) {
-            kinetic.track(time);
-          }
-          if (kinetic.shouldNotify()) {
-            kinetic.notify();
-          }
-          if (kinetic.swiped()) {
-            kinetic.swipe(time);
-          }
+          kinetic.track(time);
+          kinetic.notify();
+          kinetic.deactivate();
+          kinetic.swipe(time);
+          kinetic.collect();
         }
       }
     }, {
@@ -402,12 +508,12 @@
     }, {
       key: 'clientX',
       value: function clientX(e) {
-        return e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
+        return e.clientX;
       }
     }, {
       key: 'clientY',
       value: function clientY(e) {
-        return e.targetTouches ? e.targetTouches[0].clientY : e.clientY;
+        return e.clientY;
       }
     }]);
 
@@ -424,20 +530,9 @@
       this.amplitudeFactor = amplitudeFactor || Kinetic.AMPLITUDE_FACTOR;
       this.deltaThreshold = deltaThreshold || Kinetic.DELTA_THRESHOLD;
       this.movingAvarageFilter = movingAvarageFilter || Kinetic.MOVING_AVARAGE_FILTER;
+      this.pointers = [];
       this.events = [];
-      this.position = new Vector(0, 0);
-      this.delta = new Vector(0, 0);
-      this.velocity = new Vector(0, 0);
-      this.amplitude = new Vector(0, 0);
       this._offset = new Vector(0, 0);
-      this._startPosition = new Vector(0, 0);
-      this._pressed = false;
-      this._shouldNotify = false;
-      this._swiped = false;
-      this._framesCount = 0;
-      this._timestamp = 0;
-      this._elapsed = 0;
-      this._pointerId = null;
     }
 
     babelHelpers.createClass(Kinetic, [{
@@ -456,52 +551,60 @@
     }, {
       key: 'track',
       value: function track(time) {
-        this._timestamp = this._timestamp || time;
-        if (this._framesCount === 6) {
-          this._elapsed = time - this._timestamp;
-          this._timestamp = time;
-          this._framesCount = 0;
-
-          var v = this.delta.mul(this.movingAvarageFilter).idiv(1 + this._elapsed);
-          this.velocity = v.lerp(this.velocity, 0.2);
-        } else {
-          this._framesCount++;
-        }
-      }
-    }, {
-      key: 'swipe',
-      value: function swipe(time) {
-        this._elapsed = time - this._timestamp;
-        this.delta = this.amplitude.mul(Math.exp(-this._elapsed / DECELERATION_RATE));
-        if (this.delta.magnitude() > this.deltaThreshold) {
-          this._shouldNotify = true;
-        } else {
-          this._swiped = false;
+        for (var i = 0; i < this.pointers.length; i++) {
+          var pointer = this.pointers[i];
+          if (pointer.pressed()) {
+            pointer.track(time, this.movingAvarageFilter);
+          }
         }
       }
     }, {
       key: 'notify',
       value: function notify() {
         for (var i = 0; i < this.events.length; i++) {
-          this.events[i](this.position, this.delta);
+          var pointers = this.pointers.filter(activated);
+          if (pointers.length) {
+            this.events[i](pointers);
+          }
         }
-        this.delta.zero();
-        this._shouldNotify = false;
       }
     }, {
-      key: 'shouldNotify',
-      value: function shouldNotify() {
-        return this._shouldNotify;
+      key: 'deactivate',
+      value: function deactivate() {
+        for (var i = 0; i < this.pointers.length; i++) {
+          this.pointers[i].deactivate();
+        }
       }
     }, {
-      key: 'pressed',
-      value: function pressed() {
-        return this._pressed;
+      key: 'swipe',
+      value: function swipe(time) {
+        for (var i = 0; i < this.pointers.length; i++) {
+          var pointer = this.pointers[i];
+          if (pointer.swiped()) {
+            pointer.swipe(time, DECELERATION_RATE, this.deltaThreshold);
+          }
+        }
       }
     }, {
-      key: 'swiped',
-      value: function swiped() {
-        return this._swiped;
+      key: 'collect',
+      value: function collect() {
+        this.pointers = this.pointers.filter(alive);
+      }
+    }, {
+      key: 'find',
+      value: function find(id) {
+        for (var i = 0; i < this.pointers.length; i++) {
+          var pointer = this.pointers[i];
+          if (pointer.id === id) {
+            return pointer;
+          }
+        }
+        return null;
+      }
+    }, {
+      key: 'add',
+      value: function add(pointer) {
+        this.pointers.push(pointer);
       }
     }, {
       key: 'handleEvents',
@@ -566,43 +669,54 @@
       value: function tap(e) {
         var clientRect = this.el.getBoundingClientRect();
         this._offset = new Vector(clientRect.left, clientRect.top);
-        this._startPosition = Kinetic.position(e).isub(this._offset);
 
-        this.velocity = new Vector(0, 0);
-        this.amplitude = new Vector(0, 0);
-        this._timestamp = 0;
-        this._framesCount = 0;
-        this._pressed = true;
+        var id;
+        if (e.pointerId != null) {
+          id = e.pointerId;
+        } else if (e.id) {
+          id = e.id;
+        } else {
+          id = mouseEventId;
+        }
+        var pointer = this.find(id);
+        if (!pointer) {
+          pointer = new Pointer({ id: id });
+          this.add(pointer);
+        }
+        pointer.tap(Kinetic.position(e).isub(this._offset));
       }
     }, {
       key: 'drag',
       value: function drag(e) {
-        this.position = Kinetic.position(e).isub(this._offset);
-        this.delta.iadd(this.position.sub(this._startPosition));
-        this._startPosition = this.position;
-        this._shouldNotify = true;
+        var position = Kinetic.position(e).isub(this._offset);
+        var id;
+        if (e.pointerId != null) {
+          id = e.pointerId;
+        } else if (e.id) {
+          id = e.id;
+        } else {
+          id = mouseEventId;
+        }
+        var pointer = this.find(id);
+        pointer.drag(position);
       }
     }, {
       key: 'release',
-      value: function release() {
-        if (this.velocity.magnitude() > this.velocityThreshold) {
-          this.amplitude = this.velocity.imul(this.amplitudeFactor);
-          this._swiped = true;
+      value: function release(e) {
+        var id;
+        if (e.pointerId != null) {
+          id = e.pointerId;
+        } else if (e.id) {
+          id = e.id;
+        } else {
+          id = mouseEventId;
         }
-        this._framesCount = 0;
-        this._pressed = false;
-        this._pointerId = null;
+        var pointer = this.find(id);
+        pointer.launch(this.velocityThreshold, this.amplitudeFactor);
       }
     }, {
       key: '_mousedownHandler',
       value: function _mousedownHandler(e) {
-        if (e.pointerId) {
-          if (!this._pointerId) {
-            this._pointerId = e.pointerId;
-          } else if (this._pointerId !== e.pointerId) {
-            return;
-          }
-        }
         document.addEventListener('mousemove', this);
         document.addEventListener('pointermove', this);
         document.addEventListener('mouseup', this);
@@ -613,44 +727,38 @@
     }, {
       key: '_mousemoveHandler',
       value: function _mousemoveHandler(e) {
-        if (e.pointerId && this._pointerId !== e.pointerId) {
-          return;
-        }
         this.drag(e);
       }
     }, {
       key: '_mouseupHandler',
       value: function _mouseupHandler(e) {
-        if (e.pointerId && this._pointerId && this._pointerId !== e.pointerId) {
-          return;
-        }
         document.removeEventListener('pointermove', this);
         document.removeEventListener('mousemove', this);
         document.removeEventListener('pointerup', this);
         document.removeEventListener('mouseup', this);
 
-        this.release();
+        this.release(e);
       }
     }, {
       key: '_touchstartHandler',
       value: function _touchstartHandler(e) {
-        if (e.targetTouches && e.targetTouches.length > 1) {
-          return;
+        for (var i = 0; i < e.changedTouches.length; i++) {
+          this.tap(e.changedTouches[i]);
         }
-        this.tap(e);
       }
     }, {
       key: '_touchmoveHandler',
       value: function _touchmoveHandler(e) {
-        if (e.targetTouches && e.targetTouches.length > 1) {
-          return;
+        for (var i = 0; i < e.changedTouches.length; i++) {
+          this.drag(e.changedTouches[i]);
         }
-        this.drag(e);
       }
     }, {
       key: '_touchendHandler',
       value: function _touchendHandler(e) {
-        this.release();
+        for (var i = 0; i < e.changedTouches.length; i++) {
+          this.release(e.changedTouches[i]);
+        }
       }
     }]);
     return Kinetic;

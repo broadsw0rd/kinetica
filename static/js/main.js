@@ -33,8 +33,8 @@ Ball.prototype.setPosition = function(position){
     this.el.style.transform = 'translate3d(' + this.position.x + 'px, ' + this.position.y + 'px, 0)'
 }
 
-Ball.prototype._dragHandler = function(position, delta){
-    this.setPosition(this.position.add(delta))
+Ball.prototype._dragHandler = function(pointers){
+    this.setPosition(this.position.add(pointers[0].delta))
 }
 
 Kinetic.digest()

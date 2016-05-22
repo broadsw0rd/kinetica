@@ -33,11 +33,11 @@ class Pointer {
     this.position = position
     this.delta.iadd(this.position.sub(this._startPosition))
     this._startPosition = this.position
-    this._active = true
+    this._activated = true
   }
 
   launch (velocityThreshold, amplitudeFactor) {
-    if (this.velocity.length() > velocityThreshold) {
+    if (this.velocity.magnitude() > velocityThreshold) {
       this.amplitude = this.velocity.imul(amplitudeFactor)
       this._swiped = true
     }
@@ -61,8 +61,8 @@ class Pointer {
   swipe (time, decelerationRate, deltaThreshold) {
     this._elapsed = time - this._timestamp
     this.delta = this.amplitude.mul(Math.exp(-this._elapsed / decelerationRate))
-    if (this.delta.length() > deltaThreshold) {
-      this._active = true
+    if (this.delta.magnitude() > deltaThreshold) {
+      this._activated = true
     } else {
       this._swiped = false
     }
@@ -70,7 +70,7 @@ class Pointer {
 
   deactivate () {
     this.delta.zero()
-    this._active = false
+    this._activated = false
   }
 
   activated () {

@@ -1,4 +1,5 @@
 import Vector from './vectory.js'
+import Pointer from './pointer.js'
 
 var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame
 
@@ -7,6 +8,16 @@ var DECELERATION_RATE = 325
 
 var startTime
 var currentTime
+
+function activated (pointer) {
+  return pointer.activated()
+}
+
+function alive (pointer) {
+  return pointer.activated() || pointer.pressed()
+}
+
+var mouseEventId = -1
 
 class Kinetic {
 
@@ -33,15 +44,11 @@ class Kinetic {
   static notify (time) {
     for (var i = 0, kinetic; i < Kinetic.instances.length; i++) {
       kinetic = Kinetic.instances[i]
-      if (kinetic.pressed()) {
-        kinetic.track(time)
-      }
-      if (kinetic.shouldNotify()) {
-        kinetic.notify()
-      }
-      if (kinetic.swiped()) {
-        kinetic.swipe(time)
-      }
+      kinetic.track(time)
+      kinetic.notify()
+      kinetic.deactivate()
+      kinetic.swipe(time)
+      kinetic.collect()
     }
   }
 
@@ -50,11 +57,11 @@ class Kinetic {
   }
 
   static clientX (e) {
-    return e.targetTouches ? e.targetTouches[0].clientX : e.clientX
+    return e.clientX
   }
 
   static clientY (e) {
-    return e.targetTouches ? e.targetTouches[0].clientY : e.clientY
+    return e.clientY
   }
 
   constructor ({ el, velocityThreshold, amplitudeFactor, deltaThreshold, movingAvarageFilter }) {
@@ -63,20 +70,9 @@ class Kinetic {
     this.amplitudeFactor = amplitudeFactor || Kinetic.AMPLITUDE_FACTOR
     this.deltaThreshold = deltaThreshold || Kinetic.DELTA_THRESHOLD
     this.movingAvarageFilter = movingAvarageFilter || Kinetic.MOVING_AVARAGE_FILTER
+    this.pointers = []
     this.events = []
-    this.position = new Vector(0, 0)
-    this.delta = new Vector(0, 0)
-    this.velocity = new Vector(0, 0)
-    this.amplitude = new Vector(0, 0)
     this._offset = new Vector(0, 0)
-    this._startPosition = new Vector(0, 0)
-    this._pressed = false
-    this._shouldNotify = false
-    this._swiped = false
-    this._framesCount = 0
-    this._timestamp = 0
-    this._elapsed = 0
-    this._pointerId = null
   }
 
   listen (handler) {
@@ -91,47 +87,54 @@ class Kinetic {
   }
 
   track (time) {
-    this._timestamp = this._timestamp || time
-    if (this._framesCount === 6) {
-      this._elapsed = time - this._timestamp
-      this._timestamp = time
-      this._framesCount = 0
-
-      var v = this.delta.mul(this.movingAvarageFilter).idiv(1 + this._elapsed)
-      this.velocity = v.lerp(this.velocity, 0.2)
-    } else {
-      this._framesCount++
-    }
-  }
-
-  swipe (time) {
-    this._elapsed = time - this._timestamp
-    this.delta = this.amplitude.mul(Math.exp(-this._elapsed / DECELERATION_RATE))
-    if (this.delta.magnitude() > this.deltaThreshold) {
-      this._shouldNotify = true
-    } else {
-      this._swiped = false
+    for (var i = 0; i < this.pointers.length; i++) {
+      var pointer = this.pointers[i]
+      if (pointer.pressed()) {
+        pointer.track(time, this.movingAvarageFilter)
+      }
     }
   }
 
   notify () {
     for (var i = 0; i < this.events.length; i++) {
-      this.events[i](this.position, this.delta)
+      var pointers = this.pointers.filter(activated)
+      if (pointers.length) {
+        this.events[i](pointers)
+      }
     }
-    this.delta.zero()
-    this._shouldNotify = false
   }
 
-  shouldNotify () {
-    return this._shouldNotify
+  deactivate () {
+    for (var i = 0; i < this.pointers.length; i++) {
+      this.pointers[i].deactivate()
+    }
   }
 
-  pressed () {
-    return this._pressed
+  swipe (time) {
+    for (var i = 0; i < this.pointers.length; i++) {
+      var pointer = this.pointers[i]
+      if (pointer.swiped()) {
+        pointer.swipe(time, DECELERATION_RATE, this.deltaThreshold)
+      }
+    }
   }
 
-  swiped () {
-    return this._swiped
+  collect () {
+    this.pointers = this.pointers.filter(alive)
+  }
+
+  find (id) {
+    for (var i = 0; i < this.pointers.length; i++) {
+      var pointer = this.pointers[i]
+      if (pointer.id === id) {
+        return pointer
+      }
+    }
+    return null
+  }
+
+  add (pointer) {
+    this.pointers.push(pointer)
   }
 
   handleEvents () {
@@ -186,40 +189,51 @@ class Kinetic {
   tap (e) {
     var clientRect = this.el.getBoundingClientRect()
     this._offset = new Vector(clientRect.left, clientRect.top)
-    this._startPosition = Kinetic.position(e).isub(this._offset)
 
-    this.velocity = new Vector(0, 0)
-    this.amplitude = new Vector(0, 0)
-    this._timestamp = 0
-    this._framesCount = 0
-    this._pressed = true
+    var id
+    if (e.pointerId != null) {
+      id = e.pointerId
+    } else if (e.id) {
+      id = e.id
+    } else {
+      id = mouseEventId
+    }
+    var pointer = this.find(id)
+    if (!pointer) {
+      pointer = new Pointer({ id })
+      this.add(pointer)
+    }
+    pointer.tap(Kinetic.position(e).isub(this._offset))
   }
 
   drag (e) {
-    this.position = Kinetic.position(e).isub(this._offset)
-    this.delta.iadd(this.position.sub(this._startPosition))
-    this._startPosition = this.position
-    this._shouldNotify = true
+    var position = Kinetic.position(e).isub(this._offset)
+    var id
+    if (e.pointerId != null) {
+      id = e.pointerId
+    } else if (e.id) {
+      id = e.id
+    } else {
+      id = mouseEventId
+    }
+    var pointer = this.find(id)
+    pointer.drag(position)
   }
 
-  release () {
-    if (this.velocity.magnitude() > this.velocityThreshold) {
-      this.amplitude = this.velocity.imul(this.amplitudeFactor)
-      this._swiped = true
+  release (e) {
+    var id
+    if (e.pointerId != null) {
+      id = e.pointerId
+    } else if (e.id) {
+      id = e.id
+    } else {
+      id = mouseEventId
     }
-    this._framesCount = 0
-    this._pressed = false
-    this._pointerId = null
+    var pointer = this.find(id)
+    pointer.launch(this.velocityThreshold, this.amplitudeFactor)
   }
 
   _mousedownHandler (e) {
-    if (e.pointerId) {
-      if (!this._pointerId) {
-        this._pointerId = e.pointerId
-      } else if (this._pointerId !== e.pointerId) {
-        return
-      }
-    }
     document.addEventListener('mousemove', this)
     document.addEventListener('pointermove', this)
     document.addEventListener('mouseup', this)
@@ -229,40 +243,34 @@ class Kinetic {
   }
 
   _mousemoveHandler (e) {
-    if (e.pointerId && this._pointerId !== e.pointerId) {
-      return
-    }
     this.drag(e)
   }
 
   _mouseupHandler (e) {
-    if (e.pointerId && this._pointerId && this._pointerId !== e.pointerId) {
-      return
-    }
     document.removeEventListener('pointermove', this)
     document.removeEventListener('mousemove', this)
     document.removeEventListener('pointerup', this)
     document.removeEventListener('mouseup', this)
 
-    this.release()
+    this.release(e)
   }
 
   _touchstartHandler (e) {
-    if (e.targetTouches && e.targetTouches.length > 1) {
-      return
+    for (var i = 0; i < e.changedTouches.length; i++) {
+      this.tap(e.changedTouches[i])
     }
-    this.tap(e)
   }
 
   _touchmoveHandler (e) {
-    if (e.targetTouches && e.targetTouches.length > 1) {
-      return
+    for (var i = 0; i < e.changedTouches.length; i++) {
+      this.drag(e.changedTouches[i])
     }
-    this.drag(e)
   }
 
   _touchendHandler (e) {
-    this.release()
+    for (var i = 0; i < e.changedTouches.length; i++) {
+      this.release(e.changedTouches[i])
+    }
   }
 }
 
