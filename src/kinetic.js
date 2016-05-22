@@ -98,7 +98,7 @@ class Kinetic {
       this._framesCount = 0
 
       var v = this.delta.mul(this.movingAvarageFilter).idiv(1 + this._elapsed)
-      this.velocity = v.imul(0.8).iadd(this.velocity.imul(0.2))
+      this.velocity = v.lerp(this.velocity, 0.2)
     } else {
       this._framesCount++
     }
