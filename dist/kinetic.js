@@ -749,8 +749,8 @@
     }, {
       key: '_touchmoveHandler',
       value: function _touchmoveHandler(e) {
-        for (var i = 0; i < e.changedTouches.length; i++) {
-          this.drag(e.changedTouches[i]);
+        for (var i = 0; i < e.targetTouches.length; i++) {
+          this.drag(e.targetTouches[i]);
         }
       }
     }, {
