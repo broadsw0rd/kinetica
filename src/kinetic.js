@@ -186,18 +186,21 @@ class Kinetic {
     }
   }
 
+  getId (e) {
+    if (e.pointerId != null) {
+      return e.pointerId
+    } else if (e.identifier) {
+      return e.identifier
+    } else {
+      return mouseEventId
+    }
+  }
+
   tap (e) {
     var clientRect = this.el.getBoundingClientRect()
     this._offset = new Vector(clientRect.left, clientRect.top)
 
-    var id
-    if (e.pointerId != null) {
-      id = e.pointerId
-    } else if (e.id) {
-      id = e.id
-    } else {
-      id = mouseEventId
-    }
+    var id = this.getId(e)    
     var pointer = this.find(id)
     if (!pointer) {
       pointer = new Pointer({ id })
@@ -207,28 +210,14 @@ class Kinetic {
   }
 
   drag (e) {
-    var position = Kinetic.position(e).isub(this._offset)
-    var id
-    if (e.pointerId != null) {
-      id = e.pointerId
-    } else if (e.id) {
-      id = e.id
-    } else {
-      id = mouseEventId
-    }
+    var position = Kinetic.position(e).isub(this._offset)    
+    var id = this.getId(e)
     var pointer = this.find(id)
     pointer.drag(position)
   }
 
-  release (e) {
-    var id
-    if (e.pointerId != null) {
-      id = e.pointerId
-    } else if (e.id) {
-      id = e.id
-    } else {
-      id = mouseEventId
-    }
+  release (e) {    
+    var id = this.getId(e)
     var pointer = this.find(id)
     pointer.launch(this.velocityThreshold, this.amplitudeFactor)
   }
