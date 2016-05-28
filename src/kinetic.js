@@ -200,7 +200,7 @@ class Kinetic {
     var clientRect = this.el.getBoundingClientRect()
     this._offset = new Vector(clientRect.left, clientRect.top)
 
-    var id = this.getId(e)    
+    var id = this.getId(e)
     var pointer = this.find(id)
     if (!pointer) {
       pointer = new Pointer({ id })
@@ -210,13 +210,13 @@ class Kinetic {
   }
 
   drag (e) {
-    var position = Kinetic.position(e).isub(this._offset)    
+    var position = Kinetic.position(e).isub(this._offset)
     var id = this.getId(e)
     var pointer = this.find(id)
     pointer.drag(position)
   }
 
-  release (e) {    
+  release (e) {
     var id = this.getId(e)
     var pointer = this.find(id)
     pointer.launch(this.velocityThreshold, this.amplitudeFactor)
