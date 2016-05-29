@@ -40,15 +40,16 @@ Rect.prototype.setSize = function (size) {
 }
 
 Rect.prototype._dragHandler = function (pointers) {
-  if (pointers.length === 1) {
-    this.setPosition(this.position.add(pointers[0].delta))
-  } else if (pointers.length === 2) {
+  if (pointers.length === 2 && pointers[0].pressed() && pointers[1].pressed()) {
     pointers = pointers.sort(function (pointerA, pointerB) {
       return (pointerA.position.x > pointerB.position.x) - (pointerA.position.x < pointerB.position.x)
     })
-    this.setPosition(this.position.iadd(pointers[0].delta))
-    this.setSize(this.size.iadd(pointers[1].delta))
-  }
+    var scaleFactor = pointers[0].delta.add(pointers[1].delta.mul(-1))
+    this.setPosition(this.position.add(scaleFactor))
+    this.setSize(this.size.add(scaleFactor.imul(2)))
+  } else {
+    this.setPosition(this.position.add(pointers[0].delta))
+  } 
 }
 
 Kinetic.digest()
