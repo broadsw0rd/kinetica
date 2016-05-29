@@ -46,7 +46,7 @@ Rect.prototype._dragHandler = function (pointers) {
     })
     var scaleFactor = pointers[0].delta.add(pointers[1].delta.mul(-1))
     this.setPosition(this.position.add(scaleFactor))
-    this.setSize(this.size.add(scaleFactor.imul(2)))
+    this.setSize(this.size.add(scaleFactor.imul(-2)))
   } else {
     this.setPosition(this.position.add(pointers[0].delta))
   } 
