@@ -75,11 +75,11 @@ class Kinetic {
     this._offset = new Vector(0, 0)
   }
 
-  listen (handler) {
+  subscribe (handler) {
     this.events.push(handler)
   }
 
-  stopListening (handler) {
+  unsubscribe (handler) {
     var idx = this.events.indexOf(handler)
     if (idx !== -1) {
       this.events.splice(idx, 1)

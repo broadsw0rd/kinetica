@@ -11,7 +11,7 @@ var containerHeight = parseInt(container.getBoundingClientRect().height)
 function Rect () {
   this.el = document.createElement('div')
   this.kinetic = new Kinetic({ el: this.el })
-  this.kinetic.listen(this._dragHandler.bind(this))
+  this.kinetic.subscribe(this._dragHandler.bind(this))
   this.color = colors[rand(0, colors.length - 1)]
 
   container.appendChild(this.el) 

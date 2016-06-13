@@ -536,13 +536,13 @@
     }
 
     babelHelpers.createClass(Kinetic, [{
-      key: 'listen',
-      value: function listen(handler) {
+      key: 'subscribe',
+      value: function subscribe(handler) {
         this.events.push(handler);
       }
     }, {
-      key: 'stopListening',
-      value: function stopListening(handler) {
+      key: 'unsubscribe',
+      value: function unsubscribe(handler) {
         var idx = this.events.indexOf(handler);
         if (idx !== -1) {
           this.events.splice(idx, 1);
