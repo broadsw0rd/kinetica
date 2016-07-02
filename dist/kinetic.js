@@ -4,34 +4,6 @@
   (global.Kinetic = factory());
 }(this, function () { 'use strict';
 
-  var babelHelpers = {};
-
-  babelHelpers.classCallCheck = function (instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  };
-
-  babelHelpers.createClass = function () {
-    function defineProperties(target, props) {
-      for (var i = 0; i < props.length; i++) {
-        var descriptor = props[i];
-        descriptor.enumerable = descriptor.enumerable || false;
-        descriptor.configurable = true;
-        if ("value" in descriptor) descriptor.writable = true;
-        Object.defineProperty(target, descriptor.key, descriptor);
-      }
-    }
-
-    return function (Constructor, protoProps, staticProps) {
-      if (protoProps) defineProperties(Constructor.prototype, protoProps);
-      if (staticProps) defineProperties(Constructor, staticProps);
-      return Constructor;
-    };
-  }();
-
-  babelHelpers;
-
   function Vector(x, y) {
     this.x = x || 0;
     this.y = y || 0;
@@ -346,12 +318,36 @@
     });
   }
 
+  var classCallCheck = function (instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  };
+
+  var createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) descriptor.writable = true;
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+      if (staticProps) defineProperties(Constructor, staticProps);
+      return Constructor;
+    };
+  }();
+
   var TRACK_THRESHOLD = 100;
 
   var Pointer = function () {
     function Pointer(_ref) {
       var id = _ref.id;
-      babelHelpers.classCallCheck(this, Pointer);
+      classCallCheck(this, Pointer);
 
       this.id = id;
       this.position = new Vector(0, 0);
@@ -367,7 +363,7 @@
       this._elapsed = 0;
     }
 
-    babelHelpers.createClass(Pointer, [{
+    createClass(Pointer, [{
       key: 'tap',
       value: function tap(position) {
         this.velocity = new Vector(0, 0);
@@ -465,7 +461,7 @@
   var mouseEventId = -1;
 
   var Kinetic = function () {
-    babelHelpers.createClass(Kinetic, null, [{
+    createClass(Kinetic, null, [{
       key: 'digest',
       value: function digest(time) {
         startTime = startTime || Date.now();
@@ -523,7 +519,7 @@
       var amplitudeFactor = _ref.amplitudeFactor;
       var deltaThreshold = _ref.deltaThreshold;
       var movingAvarageFilter = _ref.movingAvarageFilter;
-      babelHelpers.classCallCheck(this, Kinetic);
+      classCallCheck(this, Kinetic);
 
       this.el = el;
       this.velocityThreshold = velocityThreshold || Kinetic.VELOCITY_THRESHOLD;
@@ -535,7 +531,7 @@
       this._offset = new Vector(0, 0);
     }
 
-    babelHelpers.createClass(Kinetic, [{
+    createClass(Kinetic, [{
       key: 'subscribe',
       value: function subscribe(handler) {
         this.events.push(handler);
