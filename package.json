@@ -10,6 +10,10 @@
   ],
   "license": "MIT",
   "homepage": "http://broadsw0rd.github.io/kinetic-engine/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/broadsw0rd/kinetic-engine"
+  },
   "bugs": {
     "url": "https://github.com/broadsw0rd/kinetic-engine/issues",
     "email": "broadsw.rd@yandex.ru"
@@ -19,11 +23,10 @@
     "email": "broadsw.rd@yandex.ru",
     "url": "https://github.com/broadsw0rd"
   },
+  "files": [
+    "dist"
+  ],
   "main": "dist/kinetic.min.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/broadsw0rd/kinetic-engine"
-  },
   "devDependencies": {
     "babel": "^6.5.2",
     "babel-preset-es2015-rollup": "^1.1.1",
