@@ -1,4 +1,4 @@
-import Vector from './vectory.js'
+import Vector from 'vectory'
 import Pointer from './pointer.js'
 
 var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame

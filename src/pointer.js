@@ -1,4 +1,4 @@
-import Vector from './vectory.js'
+import Vector from 'vectory'
 
 var TRACK_THRESHOLD = 100
 
