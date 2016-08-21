@@ -1,4 +1,4 @@
-<h1 align="center">Kinetic Engine</h1>
+<h1 align="center">Kinetica</h1>
 <h4 align="center">Unprecedented kinetic engine.</h2>
 <p align="center">
   <a href="https://www.bithound.io/github/broadsw0rd/kinetica">
@@ -28,7 +28,7 @@
 Download [dev](https://rawgit.com/broadsw0rd/kinetica/master/dist/kinetic.js) or [prod](https://rawgit.com/broadsw0rd/kinetica/master/dist/kinetic.min.js) version and put it in your html
 
 ```html
-<script src="vendor/dynamica.min.js"></script>
+<script src="vendor/kinetic.min.js"></script>
 ```
 
 ## Usage
