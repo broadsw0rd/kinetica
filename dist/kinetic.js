@@ -456,13 +456,8 @@
 	  return Pointer;
 	}();
 
-	var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
-
 	// iOS decelerationRate = normal
 	var DECELERATION_RATE = 325;
-
-	var startTime;
-	var currentTime;
 
 	function activated(pointer) {
 	  return pointer.activated();
@@ -475,13 +470,6 @@
 	var mouseEventId = -1;
 
 	var Kinetic = function () {
-	  Kinetic.digest = function digest(time) {
-	    startTime = startTime || Date.now();
-	    currentTime = startTime + (time | 0);
-	    Kinetic.notify(currentTime);
-	    requestAnimationFrame(Kinetic.digest);
-	  };
-
 	  Kinetic.spawn = function spawn(kinetic) {
 	    Kinetic.instances.push(kinetic);
 	    kinetic.handleEvents();
