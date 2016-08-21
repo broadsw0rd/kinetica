@@ -21,7 +21,7 @@
 ## Features
 
 - Lightweight - [10.4 KB](https://github.com/broadsw0rd/kinetica/blob/master/dist/kinetic.min.js)
-- Support mouse events, touch events (Webkit) and pointer events (IE)
+- Mobile friendly - supports mouse events, touch events(Webkit) and pointer events(IE)
 - Designed with performance in mind and reviewed with [IRHydra](http://mrale.ph/irhydra/2/)
 
 ## Install
