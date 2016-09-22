@@ -4,6 +4,8 @@ import Pointer from './pointer.js'
 // iOS decelerationRate = normal
 var DECELERATION_RATE = 325
 
+function noop () {}
+
 function activated (pointer) {
   return pointer.activated()
 }
@@ -52,14 +54,20 @@ class Kinetic {
     return e.clientY
   }
 
-  constructor ({ el, velocityThreshold, amplitudeFactor, deltaThreshold, movingAvarageFilter }) {
+  constructor ({ el, velocityThreshold, amplitudeFactor, deltaThreshold, movingAvarageFilter, ondragstart, ondragmove, ondragend }) {
     this.el = el
     this.velocityThreshold = velocityThreshold || Kinetic.VELOCITY_THRESHOLD
     this.amplitudeFactor = amplitudeFactor || Kinetic.AMPLITUDE_FACTOR
     this.deltaThreshold = deltaThreshold || Kinetic.DELTA_THRESHOLD
     this.movingAvarageFilter = movingAvarageFilter || Kinetic.MOVING_AVARAGE_FILTER
+
+    this.ondragstart = ondragstart || noop
+    this.ondragmove = ondragmove || noop
+    this.ondragend = ondragend || noop
+
     this.pointers = []
     this.events = []
+
     this._offset = new Vector(0, 0)
   }
 
@@ -195,6 +203,8 @@ class Kinetic {
       this.add(pointer)
     }
     pointer.tap(Kinetic.position(e).isub(this._offset))
+
+    this.ondragstart()
   }
 
   drag (e) {
@@ -202,12 +212,16 @@ class Kinetic {
     var id = this.getId(e)
     var pointer = this.find(id)
     pointer.drag(position)
+
+    this.ondragmove()
   }
 
   release (e) {
     var id = this.getId(e)
     var pointer = this.find(id)
     pointer.launch(this.velocityThreshold, this.amplitudeFactor)
+
+    this.ondragend()
   }
 
   _mousedownHandler (e) {

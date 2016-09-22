@@ -453,6 +453,8 @@ var Pointer = function () {
 // iOS decelerationRate = normal
 var DECELERATION_RATE = 325;
 
+function noop() {}
+
 function activated(pointer) {
   return pointer.activated();
 }
@@ -506,6 +508,9 @@ var Kinetic = function () {
     var amplitudeFactor = _ref.amplitudeFactor;
     var deltaThreshold = _ref.deltaThreshold;
     var movingAvarageFilter = _ref.movingAvarageFilter;
+    var ondragstart = _ref.ondragstart;
+    var ondragmove = _ref.ondragmove;
+    var ondragend = _ref.ondragend;
     classCallCheck(this, Kinetic);
 
     this.el = el;
@@ -513,8 +518,14 @@ var Kinetic = function () {
     this.amplitudeFactor = amplitudeFactor || Kinetic.AMPLITUDE_FACTOR;
     this.deltaThreshold = deltaThreshold || Kinetic.DELTA_THRESHOLD;
     this.movingAvarageFilter = movingAvarageFilter || Kinetic.MOVING_AVARAGE_FILTER;
+
+    this.ondragstart = ondragstart || noop;
+    this.ondragmove = ondragmove || noop;
+    this.ondragend = ondragend || noop;
+
     this.pointers = [];
     this.events = [];
+
     this._offset = new vectory(0, 0);
   }
 
@@ -656,6 +667,8 @@ var Kinetic = function () {
       this.add(pointer);
     }
     pointer.tap(Kinetic.position(e).isub(this._offset));
+
+    this.ondragstart();
   };
 
   Kinetic.prototype.drag = function drag(e) {
@@ -663,12 +676,16 @@ var Kinetic = function () {
     var id = this.getId(e);
     var pointer = this.find(id);
     pointer.drag(position);
+
+    this.ondragmove();
   };
 
   Kinetic.prototype.release = function release(e) {
     var id = this.getId(e);
     var pointer = this.find(id);
     pointer.launch(this.velocityThreshold, this.amplitudeFactor);
+
+    this.ondragend();
   };
 
   Kinetic.prototype._mousedownHandler = function _mousedownHandler(e) {
