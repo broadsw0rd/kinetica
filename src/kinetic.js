@@ -14,6 +14,10 @@ function alive (pointer) {
   return pointer.activated() || pointer.pressed()
 }
 
+function swiped (pointer) {
+  return pointer.swiped()
+}
+
 var mouseEventId = -1
 
 class Kinetic {
@@ -39,6 +43,7 @@ class Kinetic {
       kinetic.deactivate()
       kinetic.swipe(time)
       kinetic.collect()
+      kinetic.check()
     }
   }
 
@@ -54,7 +59,18 @@ class Kinetic {
     return e.clientY
   }
 
-  constructor ({ el, velocityThreshold, amplitudeFactor, deltaThreshold, movingAvarageFilter, ondragstart, ondragmove, ondragend }) {
+  constructor ({
+    el,
+    velocityThreshold,
+    amplitudeFactor,
+    deltaThreshold,
+    movingAvarageFilter,
+    ondragstart,
+    ondragmove,
+    ondragend,
+    onswipestart,
+    onswipeend
+  }) {
     this.el = el
     this.velocityThreshold = velocityThreshold || Kinetic.VELOCITY_THRESHOLD
     this.amplitudeFactor = amplitudeFactor || Kinetic.AMPLITUDE_FACTOR
@@ -64,10 +80,13 @@ class Kinetic {
     this.ondragstart = ondragstart || noop
     this.ondragmove = ondragmove || noop
     this.ondragend = ondragend || noop
+    this.onswipestart = onswipestart || noop
+    this.onswipeend = onswipeend || noop
 
     this.pointers = []
     this.events = []
 
+    this._swiped = false
     this._offset = new Vector(0, 0)
   }
 
@@ -117,6 +136,20 @@ class Kinetic {
 
   collect () {
     this.pointers = this.pointers.filter(alive)
+  }
+
+  check () {
+    if (!this._swiped) {
+      if (this.pointers.filter(swiped).length) {
+        this._swiped = true
+        this.onswipestart()
+      }
+    } else {
+      if (!this.pointers.filter(swiped).length) {
+        this._swiped = false
+        this.onswipeend()
+      }
+    }
   }
 
   find (id) {

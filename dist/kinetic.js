@@ -463,6 +463,10 @@ function alive(pointer) {
   return pointer.activated() || pointer.pressed();
 }
 
+function swiped(pointer) {
+  return pointer.swiped();
+}
+
 var mouseEventId = -1;
 
 var Kinetic = function () {
@@ -487,6 +491,7 @@ var Kinetic = function () {
       kinetic.deactivate();
       kinetic.swipe(time);
       kinetic.collect();
+      kinetic.check();
     }
   };
 
@@ -511,6 +516,8 @@ var Kinetic = function () {
     var ondragstart = _ref.ondragstart;
     var ondragmove = _ref.ondragmove;
     var ondragend = _ref.ondragend;
+    var onswipestart = _ref.onswipestart;
+    var onswipeend = _ref.onswipeend;
     classCallCheck(this, Kinetic);
 
     this.el = el;
@@ -522,10 +529,13 @@ var Kinetic = function () {
     this.ondragstart = ondragstart || noop;
     this.ondragmove = ondragmove || noop;
     this.ondragend = ondragend || noop;
+    this.onswipestart = onswipestart || noop;
+    this.onswipeend = onswipeend || noop;
 
     this.pointers = [];
     this.events = [];
 
+    this._swiped = false;
     this._offset = new vectory(0, 0);
   }
 
@@ -575,6 +585,20 @@ var Kinetic = function () {
 
   Kinetic.prototype.collect = function collect() {
     this.pointers = this.pointers.filter(alive);
+  };
+
+  Kinetic.prototype.check = function check() {
+    if (!this._swiped) {
+      if (this.pointers.filter(swiped).length) {
+        this._swiped = true;
+        this.onswipestart();
+      }
+    } else {
+      if (!this.pointers.filter(swiped).length) {
+        this._swiped = false;
+        this.onswipeend();
+      }
+    }
   };
 
   Kinetic.prototype.find = function find(id) {
