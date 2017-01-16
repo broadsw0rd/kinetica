@@ -602,13 +602,20 @@ var Kinetic = function () {
   };
 
   Kinetic.prototype.find = function find(id) {
+    var result = null;
     for (var i = 0; i < this.pointers.length; i++) {
       var pointer = this.pointers[i];
       if (pointer.id === id) {
-        return pointer;
+        result = pointer;
       }
     }
-    return null;
+    if (!result) {
+      if (this.pointers.length === 1 && this.pointers[0].swiped()) {
+        result = this.pointers[0];
+        result.id = id;
+      }
+    }
+    return result;
   };
 
   Kinetic.prototype.add = function add(pointer) {
@@ -616,19 +623,27 @@ var Kinetic = function () {
   };
 
   Kinetic.prototype.handleEvents = function handleEvents() {
-    this.el.addEventListener('mousedown', this);
-    this.el.addEventListener('pointerdown', this);
-    this.el.addEventListener('touchstart', this);
-    this.el.addEventListener('touchmove', this);
-    this.el.addEventListener('touchend', this);
+    if (window.PointerEvent) {
+      this.el.addEventListener('pointerdown', this, true);
+    } else {
+      this.el.addEventListener('mousedown', this, true);
+      this.el.addEventListener('touchstart', this, true);
+      this.el.addEventListener('touchmove', this, true);
+      this.el.addEventListener('touchend', this, true);
+      this.el.addEventListener('touchcancel', this, true);
+    }
   };
 
   Kinetic.prototype.unhandleEvents = function unhandleEvents() {
-    this.el.removeEventListener('mousedown', this);
-    this.el.removeEventListener('pointerdown', this);
-    this.el.removeEventListener('touchstart', this);
-    this.el.removeEventListener('touchmove', this);
-    this.el.removeEventListener('touchend', this);
+    if (window.PointerEvent) {
+      this.el.removeEventListener('pointerdown', this, true);
+    } else {
+      this.el.removeEventListener('mousedown', this, true);
+      this.el.removeEventListener('touchstart', this, true);
+      this.el.removeEventListener('touchmove', this, true);
+      this.el.removeEventListener('touchend', this, true);
+      this.el.removeEventListener('touchcancel', this, true);
+    }
   };
 
   Kinetic.prototype.handleEvent = function handleEvent(e) {
@@ -648,6 +663,7 @@ var Kinetic = function () {
         }
       case 'mouseup':
       case 'pointerup':
+      case 'pointercancel':
         {
           this._mouseupHandler(e);
           break;
@@ -663,6 +679,7 @@ var Kinetic = function () {
           break;
         }
       case 'touchend':
+      case 'touchcancel':
         {
           this._touchendHandler(e);
           break;
@@ -713,10 +730,15 @@ var Kinetic = function () {
   };
 
   Kinetic.prototype._mousedownHandler = function _mousedownHandler(e) {
-    document.addEventListener('mousemove', this);
-    document.addEventListener('pointermove', this);
-    document.addEventListener('mouseup', this);
-    document.addEventListener('pointerup', this);
+    if (window.PointerEvent) {
+      this.el.addEventListener('pointermove', this, true);
+      this.el.addEventListener('pointerup', this, true);
+      this.el.addEventListener('pointercancel', this, true);
+      this.el.setPointerCapture(e.pointerId);
+    } else {
+      document.addEventListener('mousemove', this, true);
+      document.addEventListener('mouseup', this, true);
+    }
 
     this.tap(e);
   };
@@ -726,10 +748,15 @@ var Kinetic = function () {
   };
 
   Kinetic.prototype._mouseupHandler = function _mouseupHandler(e) {
-    document.removeEventListener('pointermove', this);
-    document.removeEventListener('mousemove', this);
-    document.removeEventListener('pointerup', this);
-    document.removeEventListener('mouseup', this);
+    if (window.PointerEvent) {
+      this.el.removeEventListener('pointermove', this, true);
+      this.el.removeEventListener('pointerup', this, true);
+      this.el.removeEventListener('pointercancel', this, true);
+      this.el.releasePointerCapture(e.pointerId);
+    } else {
+      document.removeEventListener('mousemove', this, true);
+      document.removeEventListener('mouseup', this, true);
+    }
 
     this.release(e);
   };
