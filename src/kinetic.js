@@ -10,6 +10,10 @@ function activated (pointer) {
   return pointer.activated()
 }
 
+function pressed (pointer) {
+  return pointer.pressed()
+}
+
 function alive (pointer) {
   return pointer.activated() || pointer.pressed()
 }
@@ -176,6 +180,9 @@ class Kinetic {
   handleEvents () {
     if (window.PointerEvent) {
       this.el.addEventListener('pointerdown', this, true)
+      this.el.addEventListener('pointermove', this, true)
+      this.el.addEventListener('pointerup', this, true)
+      this.el.addEventListener('pointercancel', this, true)
     } else {
       this.el.addEventListener('mousedown', this, true)
       this.el.addEventListener('touchstart', this, true)
@@ -188,6 +195,9 @@ class Kinetic {
   unhandleEvents () {
     if (window.PointerEvent) {
       this.el.removeEventListener('pointerdown', this, true)
+      this.el.removeEventListener('pointermove', this, true)
+      this.el.removeEventListener('pointerup', this, true)
+      this.el.removeEventListener('pointercancel', this, true)
     } else {
       this.el.removeEventListener('mousedown', this, true)
       this.el.removeEventListener('touchstart', this, true)
@@ -276,10 +286,7 @@ class Kinetic {
 
   _mousedownHandler (e) {
     if (window.PointerEvent) {
-      this.el.addEventListener('pointermove', this, true)
-      this.el.addEventListener('pointerup', this, true)
-      this.el.addEventListener('pointercancel', this, true)
-      this.el.setPointerCapture(e.pointerId)
+      e.target.setPointerCapture(e.pointerId)
     } else {
       document.addEventListener('mousemove', this, true)
       document.addEventListener('mouseup', this, true)
@@ -289,15 +296,14 @@ class Kinetic {
   }
 
   _mousemoveHandler (e) {
-    this.drag(e)
+    if (e.type === 'mousemove' || this.pointers.filter(pressed).length) {
+      this.drag(e)
+    }
   }
 
   _mouseupHandler (e) {
     if (window.PointerEvent) {
-      this.el.removeEventListener('pointermove', this, true)
-      this.el.removeEventListener('pointerup', this, true)
-      this.el.removeEventListener('pointercancel', this, true)
-      this.el.releasePointerCapture(e.pointerId)
+      e.target.releasePointerCapture(e.pointerId)
     } else {
       document.removeEventListener('mousemove', this, true)
       document.removeEventListener('mouseup', this, true)
