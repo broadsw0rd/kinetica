@@ -1,6 +1,9 @@
 <h1 align="center">Kinetica</h1>
 <h4 align="center">Unprecedented kinetic engine.</h2>
 <p align="center">
+	<a href="https://www.npmjs.com/package/kinetica" target="_blank">
+    <img src="https://img.shields.io/npm/v/kinetica.svg" alt="NPM version" target="_blank"></img>
+  </a>
   <a href="https://www.bithound.io/github/broadsw0rd/kinetica">
     <img src="https://www.bithound.io/github/broadsw0rd/kinetica/badges/score.svg" alt="bitHound Overall Score">
   </a>
