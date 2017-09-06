@@ -1,4 +1,3 @@
-import Vector from 'vectory'
 import Pointer from './pointer.js'
 
 // iOS decelerationRate = normal
@@ -25,7 +24,6 @@ function swiped (pointer) {
 var mouseEventId = -1
 
 class Kinetic {
-
   static spawn (kinetic) {
     Kinetic.instances.push(kinetic)
     kinetic.handleEvents()
@@ -52,7 +50,7 @@ class Kinetic {
   }
 
   static position (e) {
-    return new Vector(Kinetic.clientX(e), Kinetic.clientY(e))
+    return new this.Vector(Kinetic.clientX(e), Kinetic.clientY(e))
   }
 
   static clientX (e) {
@@ -65,6 +63,7 @@ class Kinetic {
 
   constructor ({
     el,
+    Vector,
     velocityThreshold,
     amplitudeFactor,
     deltaThreshold,
@@ -76,6 +75,7 @@ class Kinetic {
     onswipeend
   }) {
     this.el = el
+    this.Vector = Vector
     this.velocityThreshold = velocityThreshold || Kinetic.VELOCITY_THRESHOLD
     this.amplitudeFactor = amplitudeFactor || Kinetic.AMPLITUDE_FACTOR
     this.deltaThreshold = deltaThreshold || Kinetic.DELTA_THRESHOLD
@@ -91,7 +91,7 @@ class Kinetic {
     this.events = []
 
     this._swiped = false
-    this._offset = new Vector(0, 0)
+    this._offset = new this.Vector(0, 0)
   }
 
   subscribe (handler) {
@@ -254,12 +254,13 @@ class Kinetic {
 
   tap (e) {
     var clientRect = this.el.getBoundingClientRect()
-    this._offset = new Vector(clientRect.left, clientRect.top)
+    this._offset = new this.Vector(clientRect.left, clientRect.top)
 
     var id = this.getId(e)
+    var Vector = this.Vector
     var pointer = this.find(id)
     if (!pointer) {
-      pointer = new Pointer({ id })
+      pointer = new Pointer({ id, Vector })
       this.add(pointer)
     }
     pointer.tap(Kinetic.position(e).isub(this._offset))
@@ -330,8 +331,6 @@ class Kinetic {
     }
   }
 }
-
-Kinetic.Vector = Vector
 
 Kinetic.VELOCITY_THRESHOLD = 10
 Kinetic.AMPLITUDE_FACTOR = 0.8

@@ -1,16 +1,14 @@
-import Vector from 'vectory'
-
 var TRACK_THRESHOLD = 100
 
 class Pointer {
-
-  constructor ({ id }) {
+  constructor ({ id, Vector }) {
     this.id = id
-    this.position = new Vector(0, 0)
-    this.delta = new Vector(0, 0)
-    this.velocity = new Vector(0, 0)
-    this.amplitude = new Vector(0, 0)
-    this._startPosition = new Vector(0, 0)
+    this.Vector = Vector
+    this.position = new this.Vector(0, 0)
+    this.delta = new this.Vector(0, 0)
+    this.velocity = new this.Vector(0, 0)
+    this.amplitude = new this.Vector(0, 0)
+    this._startPosition = new this.Vector(0, 0)
     this._pressed = false
     this._activated = false
     this._swiped = false
@@ -20,8 +18,8 @@ class Pointer {
   }
 
   tap (position) {
-    this.velocity = new Vector(0, 0)
-    this.amplitude = new Vector(0, 0)
+    this.velocity = new this.Vector(0, 0)
+    this.amplitude = new this.Vector(0, 0)
     this._startPosition = position
     this._timestamp = 0
     this._trackTime = 0

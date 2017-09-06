@@ -1,3 +1,9 @@
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global.Kinetic = factory());
+}(this, (function () { 'use strict';
+
 var TRACK_THRESHOLD = 100;
 
 var Pointer = function Pointer (ref) {
@@ -438,4 +444,6 @@ Kinetic.MOVING_AVARAGE_FILTER = 200;
 
 Kinetic.instances = [];
 
-export default Kinetic;
+return Kinetic;
+
+})));
