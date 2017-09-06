@@ -40,8 +40,9 @@ Download [dev](https://rawgit.com/broadsw0rd/kinetica/master/dist/kinetic.js) or
 ## Examples
 
 - **[All](https://codepen.io/collection/AMJybY/)**
-- [Scroll Y](https://codepen.io/broadsw0rd/pen/rzgamQ)
-- [Scroll X](https://codepen.io/broadsw0rd/pen/OjYXVG)
+- [Scroll Y](https://codepen.io/broadsw0rd/full/rzgamQ)
+- [Scroll X](https://codepen.io/broadsw0rd/full/OjYXVG)
+- [Scroll XY](https://codepen.io/broadsw0rd/full/QMREGj)
 
 ## API
 
