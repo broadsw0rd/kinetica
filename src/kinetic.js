@@ -49,10 +49,6 @@ class Kinetic {
     }
   }
 
-  static position (e) {
-    return new this.Vector(Kinetic.clientX(e), Kinetic.clientY(e))
-  }
-
   static clientX (e) {
     return e.clientX
   }
@@ -92,6 +88,10 @@ class Kinetic {
 
     this._swiped = false
     this._offset = new this.Vector(0, 0)
+  }
+
+  position (e) {
+    return new this.Vector(Kinetic.clientX(e), Kinetic.clientY(e))
   }
 
   subscribe (handler) {
@@ -263,13 +263,13 @@ class Kinetic {
       pointer = new Pointer({ id, Vector })
       this.add(pointer)
     }
-    pointer.tap(Kinetic.position(e).isub(this._offset))
+    pointer.tap(this.position(e).isub(this._offset))
 
     this.ondragstart()
   }
 
   drag (e) {
-    var position = Kinetic.position(e).isub(this._offset)
+    var position = this.position(e).isub(this._offset)
     var id = this.getId(e)
     var pointer = this.find(id)
     pointer.drag(position)

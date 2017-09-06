@@ -172,16 +172,16 @@ Kinetic.notify = function notify (time) {
   }
 };
 
-Kinetic.position = function position (e) {
-  return new this.Vector(Kinetic.clientX(e), Kinetic.clientY(e))
-};
-
 Kinetic.clientX = function clientX (e) {
   return e.clientX
 };
 
 Kinetic.clientY = function clientY (e) {
   return e.clientY
+};
+
+Kinetic.prototype.position = function position (e) {
+  return new this.Vector(Kinetic.clientX(e), Kinetic.clientY(e))
 };
 
 Kinetic.prototype.subscribe = function subscribe (handler) {
@@ -363,13 +363,13 @@ Kinetic.prototype.tap = function tap (e) {
     pointer = new Pointer({ id: id, Vector: Vector });
     this.add(pointer);
   }
-  pointer.tap(Kinetic.position(e).isub(this._offset));
+  pointer.tap(this.position(e).isub(this._offset));
 
   this.ondragstart();
 };
 
 Kinetic.prototype.drag = function drag (e) {
-  var position = Kinetic.position(e).isub(this._offset);
+  var position = this.position(e).isub(this._offset);
   var id = this.getId(e);
   var pointer = this.find(id);
   pointer.drag(position);
