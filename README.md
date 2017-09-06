@@ -37,6 +37,50 @@ Download [dev](https://rawgit.com/broadsw0rd/kinetica/master/dist/kinetic.js) or
 
 ## Usage
 
+```js
+// start the digest loop
+requestAnimationFrame(function loop (t) {
+  Kinetic.notify(t)
+  requestAnimationFrame(loop)
+})
+
+// create kinetic instance
+var kinetic = new Kinetic({
+  el: document.body,
+  Vector: Vector
+})
+
+// spawn it
+Kinetic.spawn(kinetic)
+
+// implement scroll
+var $target = document.getElementById('container')
+
+var position = new Vector(0, 0)
+
+function scrollTo (position) {
+  $target.style.transform = `translateY(${position.y}px)`
+}
+
+function isValidScroll (position) {
+  return position.y <= 0 && position.y > -5000 + window.innerHeight
+}
+
+function scrollY (pointers) {
+  if (pointers.length === 1) {
+    var pointer = pointers[0]
+    var next = position.add(pointer.delta)
+    if (isValidScroll(next)) {
+      scrollTo(next)
+      position = next
+    }
+  }
+}
+
+// subscribe to kinetic
+kinetic.subscribe(scrollY)
+```
+
 ## Examples
 
 - **[All](https://codepen.io/collection/AMJybY/)**
