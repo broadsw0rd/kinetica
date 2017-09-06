@@ -39,6 +39,9 @@ Download [dev](https://rawgit.com/broadsw0rd/kinetica/master/dist/kinetic.js) or
 
 ## Examples
 
+- **[All](https://codepen.io/collection/AMJybY/)**
+- [Scroll Y](https://codepen.io/broadsw0rd/pen/rzgamQ)
+
 ## API
 
 ## Development
