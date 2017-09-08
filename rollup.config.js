@@ -1,15 +1,13 @@
-import babel from 'rollup-plugin-babel'
-import nodeResolve from 'rollup-plugin-node-resolve'
-import commonjs from 'rollup-plugin-commonjs'
+import pkg from './package.json'
+import buble from 'rollup-plugin-buble'
 
 export default {
-  moduleName: 'Kinetic',
-  entry: 'src/kinetic.js',
-  dest: 'dist/kinetic.js',
-  format: 'umd',
-  plugins: [ 
-    babel(),
-    nodeResolve(),
-    commonjs()
+  input: 'src/kinetic.js',
+  output: [
+    { file: pkg.main, format: 'umd', name: 'Kinetic' },
+    { file: pkg.module, format: 'es' }
+  ],
+  plugins: [
+    buble()
   ]
 }

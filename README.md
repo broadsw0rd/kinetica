@@ -15,6 +15,7 @@
 ## Table of Contents
 
 - [Features](#features)
+- [Dependencies](#dependencies)
 - [Install](#install)
 - [Usage](#usage)
 - [Examples](#examples)
@@ -23,9 +24,13 @@
 
 ## Features
 
+- Designed with performance in mind
 - Lightweight - [10.4 KB](https://github.com/broadsw0rd/kinetica/blob/master/dist/kinetic.min.js)
 - Mobile friendly - supports mouse events, touch events and pointer events
-- Designed with performance in mind and reviewed with [IRHydra](http://mrale.ph/irhydra/2/)
+
+## Dependencies
+
+- [Vectory](https://www.npmjs.com/package/vectory)
 
 ## Install
 
@@ -37,10 +42,56 @@ Download [dev](https://rawgit.com/broadsw0rd/kinetica/master/dist/kinetic.js) or
 
 ## Usage
 
+```js
+// start the digest loop
+requestAnimationFrame(function loop (t) {
+  Kinetic.notify(t)
+  requestAnimationFrame(loop)
+})
+
+// create kinetic instance
+var kinetic = new Kinetic({
+  el: document.body,
+  Vector: Vector
+})
+
+// spawn it
+Kinetic.spawn(kinetic)
+
+// implement scroll
+var $target = document.getElementById('container')
+
+var position = new Vector(0, 0)
+
+function scrollTo (position) {
+  $target.style.transform = `translateY(${position.y}px)`
+}
+
+function isValidScroll (position) {
+  return position.y <= 0 && position.y > -5000 + window.innerHeight
+}
+
+function scrollY (pointers) {
+  if (pointers.length === 1) {
+    var pointer = pointers[0]
+    var next = position.add(pointer.delta)
+    if (isValidScroll(next)) {
+      scrollTo(next)
+      position = next
+    }
+  }
+}
+
+// subscribe to kinetic
+kinetic.subscribe(scrollY)
+```
+
 ## Examples
 
 - **[All](https://codepen.io/collection/AMJybY/)**
-- [Scroll Y](https://codepen.io/broadsw0rd/pen/rzgamQ)
+- [Scroll Y](https://codepen.io/broadsw0rd/full/rzgamQ)
+- [Scroll X](https://codepen.io/broadsw0rd/full/OjYXVG)
+- [Scroll XY](https://codepen.io/broadsw0rd/full/QMREGj)
 
 ## API
 
