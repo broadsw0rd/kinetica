@@ -15,6 +15,7 @@
 ## Table of Contents
 
 - [Features](#features)
+- [Dependencies](#dependencies)
 - [Install](#install)
 - [Usage](#usage)
 - [Examples](#examples)
@@ -26,6 +27,10 @@
 - Designed with performance in mind
 - Lightweight - [10.4 KB](https://github.com/broadsw0rd/kinetica/blob/master/dist/kinetic.min.js)
 - Mobile friendly - supports mouse events, touch events and pointer events
+
+## Dependencies
+
+- [Vectory](https://www.npmjs.com/package/vectory)
 
 ## Install
 
