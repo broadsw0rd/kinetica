@@ -6,19 +6,19 @@ var DECELERATION_RATE = 325
 function noop () {}
 
 function activated (pointer) {
-  return pointer.activated()
+  return pointer.activated
 }
 
 function pressed (pointer) {
-  return pointer.pressed()
+  return pointer.pressed
 }
 
 function alive (pointer) {
-  return pointer.activated() || pointer.pressed()
+  return pointer.activated || pointer.pressed
 }
 
 function swiped (pointer) {
-  return pointer.swiped()
+  return pointer.swiped
 }
 
 var mouseEventId = -1
@@ -87,7 +87,7 @@ class Kinetic {
     this.events = []
 
     this._swiped = false
-    this._offset = new this.Vector(0, 0)
+    this.offset = new this.Vector(0, 0)
   }
 
   position (e) {
@@ -108,7 +108,7 @@ class Kinetic {
   track (time) {
     for (var i = 0; i < this.pointers.length; i++) {
       var pointer = this.pointers[i]
-      if (pointer.pressed()) {
+      if (pointer.pressed) {
         pointer.track(time, this.movingAvarageFilter)
       }
     }
@@ -132,7 +132,7 @@ class Kinetic {
   swipe (time) {
     for (var i = 0; i < this.pointers.length; i++) {
       var pointer = this.pointers[i]
-      if (pointer.swiped()) {
+      if (pointer.swiped) {
         pointer.swipe(time, DECELERATION_RATE, this.deltaThreshold)
       }
     }
@@ -178,74 +178,36 @@ class Kinetic {
   }
 
   handleEvents () {
-    if (window.PointerEvent) {
-      this.el.addEventListener('pointerdown', this, true)
-      this.el.addEventListener('pointermove', this, true)
-      this.el.addEventListener('pointerup', this, true)
-      this.el.addEventListener('pointercancel', this, true)
-    } else {
-      this.el.addEventListener('mousedown', this, true)
-      this.el.addEventListener('touchstart', this, true)
-      this.el.addEventListener('touchmove', this, true)
-      this.el.addEventListener('touchend', this, true)
-      this.el.addEventListener('touchcancel', this, true)
-    }
+    this.el.addEventListener('mousedown', this, true)
+    this.el.addEventListener('touchstart', this, true)
+    this.el.addEventListener('touchmove', this, true)
+    this.el.addEventListener('touchend', this, true)
+    this.el.addEventListener('touchcancel', this, true)
   }
 
   unhandleEvents () {
-    if (window.PointerEvent) {
-      this.el.removeEventListener('pointerdown', this, true)
-      this.el.removeEventListener('pointermove', this, true)
-      this.el.removeEventListener('pointerup', this, true)
-      this.el.removeEventListener('pointercancel', this, true)
-    } else {
-      this.el.removeEventListener('mousedown', this, true)
-      this.el.removeEventListener('touchstart', this, true)
-      this.el.removeEventListener('touchmove', this, true)
-      this.el.removeEventListener('touchend', this, true)
-      this.el.removeEventListener('touchcancel', this, true)
-    }
+    this.el.removeEventListener('mousedown', this, true)
+    this.el.removeEventListener('touchstart', this, true)
+    this.el.removeEventListener('touchmove', this, true)
+    this.el.removeEventListener('touchend', this, true)
+    this.el.removeEventListener('touchcancel', this, true)
   }
 
   handleEvent (e) {
     e.preventDefault()
     switch (e.type) {
-      case 'pointerdown':
-      case 'mousedown': {
-        this._mousedownHandler(e)
-        break
-      }
-      case 'mousemove':
-      case 'pointermove': {
-        this._mousemoveHandler(e)
-        break
-      }
-      case 'mouseup':
-      case 'pointerup':
-      case 'pointercancel': {
-        this._mouseupHandler(e)
-        break
-      }
-      case 'touchstart': {
-        this._touchstartHandler(e)
-        break
-      }
-      case 'touchmove': {
-        this._touchmoveHandler(e)
-        break
-      }
+      case 'mousedown': return this.mousedownHandler(e)
+      case 'mousemove': return this.mousemoveHandler(e)
+      case 'mouseup': return this.mouseupHandler(e)
+      case 'touchstart': return this.touchstartHandler(e)
+      case 'touchmove': return this.touchmoveHandler(e)
       case 'touchend':
-      case 'touchcancel': {
-        this._touchendHandler(e)
-        break
-      }
+      case 'touchcancel': return this.touchendHandler(e)
     }
   }
 
   getId (e) {
-    if (e.pointerId != null) {
-      return e.pointerId
-    } else if (e.identifier) {
+    if (e.identifier) {
       return e.identifier
     } else {
       return mouseEventId
@@ -254,7 +216,7 @@ class Kinetic {
 
   tap (e) {
     var clientRect = this.el.getBoundingClientRect()
-    this._offset = new this.Vector(clientRect.left, clientRect.top)
+    this.offset = new this.Vector(clientRect.left, clientRect.top)
 
     var id = this.getId(e)
     var Vector = this.Vector
@@ -263,13 +225,13 @@ class Kinetic {
       pointer = new Pointer({ id, Vector })
       this.add(pointer)
     }
-    pointer.tap(this.position(e).isub(this._offset))
+    pointer.tap(this.position(e).isub(this.offset))
 
     this.ondragstart()
   }
 
   drag (e) {
-    var position = this.position(e).isub(this._offset)
+    var position = this.position(e).isub(this.offset)
     var id = this.getId(e)
     var pointer = this.find(id)
     pointer.drag(position)
@@ -285,47 +247,39 @@ class Kinetic {
     this.ondragend()
   }
 
-  _mousedownHandler (e) {
-    if (window.PointerEvent) {
-      e.target.setPointerCapture(e.pointerId)
-    } else {
-      document.addEventListener('mousemove', this, true)
-      document.addEventListener('mouseup', this, true)
-    }
+  mousedownHandler (e) {
+    document.addEventListener('mousemove', this, true)
+    document.addEventListener('mouseup', this, true)
 
     this.tap(e)
   }
 
-  _mousemoveHandler (e) {
+  mousemoveHandler (e) {
     if (e.type === 'mousemove' || this.pointers.filter(pressed).length) {
       this.drag(e)
     }
   }
 
-  _mouseupHandler (e) {
-    if (window.PointerEvent) {
-      e.target.releasePointerCapture(e.pointerId)
-    } else {
-      document.removeEventListener('mousemove', this, true)
-      document.removeEventListener('mouseup', this, true)
-    }
+  mouseupHandler (e) {
+    document.removeEventListener('mousemove', this, true)
+    document.removeEventListener('mouseup', this, true)
 
     this.release(e)
   }
 
-  _touchstartHandler (e) {
+  touchstartHandler (e) {
     for (var i = 0; i < e.changedTouches.length; i++) {
       this.tap(e.changedTouches[i])
     }
   }
 
-  _touchmoveHandler (e) {
+  touchmoveHandler (e) {
     for (var i = 0; i < e.targetTouches.length; i++) {
       this.drag(e.targetTouches[i])
     }
   }
 
-  _touchendHandler (e) {
+  touchendHandler (e) {
     for (var i = 0; i < e.changedTouches.length; i++) {
       this.release(e.changedTouches[i])
     }

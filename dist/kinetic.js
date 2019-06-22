@@ -10,79 +10,68 @@ var Pointer = function Pointer (ref) {
   this.delta = new this.Vector(0, 0);
   this.velocity = new this.Vector(0, 0);
   this.amplitude = new this.Vector(0, 0);
-  this._startPosition = new this.Vector(0, 0);
-  this._pressed = false;
-  this._activated = false;
-  this._swiped = false;
-  this._timestamp = 0;
-  this._trackTime = 0;
-  this._elapsed = 0;
+  this.startPosition = new this.Vector(0, 0);
+  this.pressed = false;
+  this.activated = false;
+  this.swiped = false;
+  this.timestamp = 0;
+  this.trackTime = 0;
+  this.elapsed = 0;
 };
 
 Pointer.prototype.tap = function tap (position) {
   this.velocity = new this.Vector(0, 0);
   this.amplitude = new this.Vector(0, 0);
-  this._startPosition = position;
-  this._timestamp = 0;
-  this._trackTime = 0;
-  this._elapsed = 0;
-  this._pressed = true;
+  this.startPosition = position;
+  this.timestamp = 0;
+  this.trackTime = 0;
+  this.elapsed = 0;
+  this.pressed = true;
+  this.swiped = false;
 };
 
 Pointer.prototype.drag = function drag (position) {
   this.position = position;
-  this.delta.iadd(this.position.sub(this._startPosition));
-  this._startPosition = this.position;
-  this._activated = true;
+  this.delta.iadd(this.position.sub(this.startPosition));
+  this.startPosition = this.position;
+  this.activated = true;
 };
 
 Pointer.prototype.launch = function launch (velocityThreshold, amplitudeFactor) {
   if (this.velocity.magnitude() > velocityThreshold) {
     this.amplitude = this.velocity.imul(amplitudeFactor);
-    this._swiped = true;
+    this.swiped = true;
   }
-  this._pressed = false;
-  this._trackTime = 0;
+  this.pressed = false;
+  this.trackTime = 0;
 };
 
 Pointer.prototype.track = function track (time, movingAvarageFilter) {
-  this._timestamp = this._timestamp || time;
-  this._trackTime = this._trackTime || time;
-  if (time - this._trackTime >= TRACK_THRESHOLD) {
-    this._elapsed = time - this._timestamp;
-    this._timestamp = time;
-    this._trackTime = 0;
+  this.timestamp = this.timestamp || time;
+  this.trackTime = this.trackTime || time;
+  if (time - this.trackTime >= TRACK_THRESHOLD) {
+    this.elapsed = time - this.timestamp;
+    this.timestamp = time;
+    this.trackTime = 0;
 
-    var v = this.delta.mul(movingAvarageFilter).idiv(1 + this._elapsed);
+    var v = this.delta.mul(movingAvarageFilter).idiv(1 + this.elapsed);
     this.velocity = v.lerp(this.velocity, 0.2);
   }
 };
 
 Pointer.prototype.swipe = function swipe (time, decelerationRate, deltaThreshold) {
-  this._elapsed = time - this._timestamp;
-  this.delta = this.amplitude.mul(Math.exp(-this._elapsed / decelerationRate));
+  this.elapsed = time - this.timestamp;
+  this.delta = this.amplitude.mul(Math.exp(-this.elapsed / decelerationRate));
   if (this.delta.magnitude() > deltaThreshold) {
-    this._activated = true;
+    this.activated = true;
   } else {
-    this._swiped = false;
+    this.swiped = false;
   }
 };
 
 Pointer.prototype.deactivate = function deactivate () {
   this.delta.zero();
-  this._activated = false;
-};
-
-Pointer.prototype.activated = function activated () {
-  return this._activated
-};
-
-Pointer.prototype.pressed = function pressed () {
-  return this._pressed
-};
-
-Pointer.prototype.swiped = function swiped () {
-  return this._swiped
+  this.activated = false;
 };
 
 // iOS decelerationRate = normal
@@ -91,19 +80,19 @@ var DECELERATION_RATE = 325;
 function noop () {}
 
 function activated (pointer) {
-  return pointer.activated()
+  return pointer.activated
 }
 
 function pressed (pointer) {
-  return pointer.pressed()
+  return pointer.pressed
 }
 
 function alive (pointer) {
-  return pointer.activated() || pointer.pressed()
+  return pointer.activated || pointer.pressed
 }
 
 function swiped (pointer) {
-  return pointer.swiped()
+  return pointer.swiped
 }
 
 var mouseEventId = -1;
@@ -138,7 +127,7 @@ var Kinetic = function Kinetic (ref) {
   this.events = [];
 
   this._swiped = false;
-  this._offset = new this.Vector(0, 0);
+  this.offset = new this.Vector(0, 0);
 };
 
 Kinetic.spawn = function spawn (kinetic) {
@@ -190,42 +179,34 @@ Kinetic.prototype.unsubscribe = function unsubscribe (handler) {
 };
 
 Kinetic.prototype.track = function track (time) {
-    var this$1 = this;
-
   for (var i = 0; i < this.pointers.length; i++) {
-    var pointer = this$1.pointers[i];
-    if (pointer.pressed()) {
-      pointer.track(time, this$1.movingAvarageFilter);
+    var pointer = this.pointers[i];
+    if (pointer.pressed) {
+      pointer.track(time, this.movingAvarageFilter);
     }
   }
 };
 
 Kinetic.prototype.notify = function notify () {
-    var this$1 = this;
-
   for (var i = 0; i < this.events.length; i++) {
-    var pointers = this$1.pointers.filter(activated);
+    var pointers = this.pointers.filter(activated);
     if (pointers.length) {
-      this$1.events[i](pointers);
+      this.events[i](pointers);
     }
   }
 };
 
 Kinetic.prototype.deactivate = function deactivate () {
-    var this$1 = this;
-
   for (var i = 0; i < this.pointers.length; i++) {
-    this$1.pointers[i].deactivate();
+    this.pointers[i].deactivate();
   }
 };
 
 Kinetic.prototype.swipe = function swipe (time) {
-    var this$1 = this;
-
   for (var i = 0; i < this.pointers.length; i++) {
-    var pointer = this$1.pointers[i];
-    if (pointer.swiped()) {
-      pointer.swipe(time, DECELERATION_RATE, this$1.deltaThreshold);
+    var pointer = this.pointers[i];
+    if (pointer.swiped) {
+      pointer.swipe(time, DECELERATION_RATE, this.deltaThreshold);
     }
   }
 };
@@ -249,11 +230,9 @@ Kinetic.prototype.check = function check () {
 };
 
 Kinetic.prototype.find = function find (id) {
-    var this$1 = this;
-
   var result = null;
   for (var i = 0; i < this.pointers.length; i++) {
-    var pointer = this$1.pointers[i];
+    var pointer = this.pointers[i];
     if (pointer.id === id) {
       result = pointer;
     }
@@ -272,74 +251,36 @@ Kinetic.prototype.add = function add (pointer) {
 };
 
 Kinetic.prototype.handleEvents = function handleEvents () {
-  if (window.PointerEvent) {
-    this.el.addEventListener('pointerdown', this, true);
-    this.el.addEventListener('pointermove', this, true);
-    this.el.addEventListener('pointerup', this, true);
-    this.el.addEventListener('pointercancel', this, true);
-  } else {
-    this.el.addEventListener('mousedown', this, true);
-    this.el.addEventListener('touchstart', this, true);
-    this.el.addEventListener('touchmove', this, true);
-    this.el.addEventListener('touchend', this, true);
-    this.el.addEventListener('touchcancel', this, true);
-  }
+  this.el.addEventListener('mousedown', this, true);
+  this.el.addEventListener('touchstart', this, true);
+  this.el.addEventListener('touchmove', this, true);
+  this.el.addEventListener('touchend', this, true);
+  this.el.addEventListener('touchcancel', this, true);
 };
 
 Kinetic.prototype.unhandleEvents = function unhandleEvents () {
-  if (window.PointerEvent) {
-    this.el.removeEventListener('pointerdown', this, true);
-    this.el.removeEventListener('pointermove', this, true);
-    this.el.removeEventListener('pointerup', this, true);
-    this.el.removeEventListener('pointercancel', this, true);
-  } else {
-    this.el.removeEventListener('mousedown', this, true);
-    this.el.removeEventListener('touchstart', this, true);
-    this.el.removeEventListener('touchmove', this, true);
-    this.el.removeEventListener('touchend', this, true);
-    this.el.removeEventListener('touchcancel', this, true);
-  }
+  this.el.removeEventListener('mousedown', this, true);
+  this.el.removeEventListener('touchstart', this, true);
+  this.el.removeEventListener('touchmove', this, true);
+  this.el.removeEventListener('touchend', this, true);
+  this.el.removeEventListener('touchcancel', this, true);
 };
 
 Kinetic.prototype.handleEvent = function handleEvent (e) {
   e.preventDefault();
   switch (e.type) {
-    case 'pointerdown':
-    case 'mousedown': {
-      this._mousedownHandler(e);
-      break
-    }
-    case 'mousemove':
-    case 'pointermove': {
-      this._mousemoveHandler(e);
-      break
-    }
-    case 'mouseup':
-    case 'pointerup':
-    case 'pointercancel': {
-      this._mouseupHandler(e);
-      break
-    }
-    case 'touchstart': {
-      this._touchstartHandler(e);
-      break
-    }
-    case 'touchmove': {
-      this._touchmoveHandler(e);
-      break
-    }
+    case 'mousedown': return this.mousedownHandler(e)
+    case 'mousemove': return this.mousemoveHandler(e)
+    case 'mouseup': return this.mouseupHandler(e)
+    case 'touchstart': return this.touchstartHandler(e)
+    case 'touchmove': return this.touchmoveHandler(e)
     case 'touchend':
-    case 'touchcancel': {
-      this._touchendHandler(e);
-      break
-    }
+    case 'touchcancel': return this.touchendHandler(e)
   }
 };
 
 Kinetic.prototype.getId = function getId (e) {
-  if (e.pointerId != null) {
-    return e.pointerId
-  } else if (e.identifier) {
+  if (e.identifier) {
     return e.identifier
   } else {
     return mouseEventId
@@ -348,7 +289,7 @@ Kinetic.prototype.getId = function getId (e) {
 
 Kinetic.prototype.tap = function tap (e) {
   var clientRect = this.el.getBoundingClientRect();
-  this._offset = new this.Vector(clientRect.left, clientRect.top);
+  this.offset = new this.Vector(clientRect.left, clientRect.top);
 
   var id = this.getId(e);
   var Vector = this.Vector;
@@ -357,13 +298,13 @@ Kinetic.prototype.tap = function tap (e) {
     pointer = new Pointer({ id: id, Vector: Vector });
     this.add(pointer);
   }
-  pointer.tap(this.position(e).isub(this._offset));
+  pointer.tap(this.position(e).isub(this.offset));
 
   this.ondragstart();
 };
 
 Kinetic.prototype.drag = function drag (e) {
-  var position = this.position(e).isub(this._offset);
+  var position = this.position(e).isub(this.offset);
   var id = this.getId(e);
   var pointer = this.find(id);
   pointer.drag(position);
@@ -379,55 +320,41 @@ Kinetic.prototype.release = function release (e) {
   this.ondragend();
 };
 
-Kinetic.prototype._mousedownHandler = function _mousedownHandler (e) {
-  if (window.PointerEvent) {
-    e.target.setPointerCapture(e.pointerId);
-  } else {
-    document.addEventListener('mousemove', this, true);
-    document.addEventListener('mouseup', this, true);
-  }
+Kinetic.prototype.mousedownHandler = function mousedownHandler (e) {
+  document.addEventListener('mousemove', this, true);
+  document.addEventListener('mouseup', this, true);
 
   this.tap(e);
 };
 
-Kinetic.prototype._mousemoveHandler = function _mousemoveHandler (e) {
+Kinetic.prototype.mousemoveHandler = function mousemoveHandler (e) {
   if (e.type === 'mousemove' || this.pointers.filter(pressed).length) {
     this.drag(e);
   }
 };
 
-Kinetic.prototype._mouseupHandler = function _mouseupHandler (e) {
-  if (window.PointerEvent) {
-    e.target.releasePointerCapture(e.pointerId);
-  } else {
-    document.removeEventListener('mousemove', this, true);
-    document.removeEventListener('mouseup', this, true);
-  }
+Kinetic.prototype.mouseupHandler = function mouseupHandler (e) {
+  document.removeEventListener('mousemove', this, true);
+  document.removeEventListener('mouseup', this, true);
 
   this.release(e);
 };
 
-Kinetic.prototype._touchstartHandler = function _touchstartHandler (e) {
-    var this$1 = this;
-
+Kinetic.prototype.touchstartHandler = function touchstartHandler (e) {
   for (var i = 0; i < e.changedTouches.length; i++) {
-    this$1.tap(e.changedTouches[i]);
+    this.tap(e.changedTouches[i]);
   }
 };
 
-Kinetic.prototype._touchmoveHandler = function _touchmoveHandler (e) {
-    var this$1 = this;
-
+Kinetic.prototype.touchmoveHandler = function touchmoveHandler (e) {
   for (var i = 0; i < e.targetTouches.length; i++) {
-    this$1.drag(e.targetTouches[i]);
+    this.drag(e.targetTouches[i]);
   }
 };
 
-Kinetic.prototype._touchendHandler = function _touchendHandler (e) {
-    var this$1 = this;
-
+Kinetic.prototype.touchendHandler = function touchendHandler (e) {
   for (var i = 0; i < e.changedTouches.length; i++) {
-    this$1.release(e.changedTouches[i]);
+    this.release(e.changedTouches[i]);
   }
 };
 
